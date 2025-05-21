@@ -1,0 +1,152 @@
+<div class="px-40 py-10 min-h-screen w-screen bg-base-200 flex flex-col gap-4">
+  <div class="navbar bg-base-100 shadow-sm rounded">
+    <div class="flex-1">
+      <a class="btn btn-ghost text-xl">RxJs Todo List</a>
+    </div>
+    <form class="filter flex-1 flex items-center">
+      <p class="mr-2">Filter:</p>
+      <input
+        class="btn btn-square"
+        type="reset"
+        (click)="changeFilter('all')"
+        value="×"
+      />
+      <input
+        class="btn"
+        type="radio"
+        name="category"
+        (click)="changeFilter('todo')"
+        aria-label="To Do"
+      />
+      <input
+        class="btn"
+        type="radio"
+        name="cateogry"
+        (click)="changeFilter('complete')"
+        aria-label="Complete"
+      />
+    </form>
+    <div class="flex gap-2">
+      <input
+        type="text"
+        placeholder="Search"
+        [(ngModel)]="searchValue"
+        (input)="setSearch($event)"
+        class="input input-bordered w-24 md:w-auto focus:outline-0 text-base-content/30"
+      />
+      <label class="swap swap-rotate mx-2">
+        <!-- this hidden checkbox controls the state -->
+        <input
+          type="checkbox"
+          [ngModel]="isLight"
+          (ngModelChange)="toggleTheme($event)"
+        />
+
+        <!-- sun icon -->
+        <span class="material-symbols-outlined swap-on"> light_mode </span>
+
+        <!-- moon icon -->
+        <span class="material-symbols-outlined swap-off"> dark_mode </span>
+      </label>
+      <button class="btn btn-square btn-ghost hidden">
+        <span class="material-symbols-outlined"> menu </span>
+      </button>
+    </div>
+  </div>
+
+  <div class="w-full h-full shadow-2xl bg-base-100 rounded p-6">
+    <div class="flex gap-4 w-full">
+      <input
+        [(ngModel)]="inputValue"
+        type="text"
+        placeholder="Add new task"
+        class="input w-full focus:outline-0 text-base-content placeholder:text-gray-500"
+      />
+      <button
+        class="btn btn-soft btn-primary"
+        [disabled]="!inputValue"
+        (click)="addTodo()"
+      >
+        Add
+      </button>
+    </div>
+
+    <ul
+      class="list bg-base-200 rounded-box border-base-300 border-2 mt-4 rounded"
+    >
+      <li
+        *ngIf="!(todos$ | async)?.length"
+        class="list-row flex items-center justify-center gap-2 text-xl h-64"
+      >
+        <span class="material-symbols-outlined"> add_task </span>
+        <span>No tasks to show.</span>
+      </li>
+
+      <li *ngFor="let todo of todos$ | async; index as i; trackBy: trackByFn">
+        <div
+          *ngIf="activeEditId !== todo.id; else editTemplate"
+          class="list-row flex justify-between"
+        >
+          <div class="flex gap-2">
+            <input
+              #cb
+              type="checkbox"
+              [checked]="todo.isComplete"
+              (change)="updateTodo(todo.id, cb.checked, todo.content)"
+              class="checkbox checked:border-green-500 checked:text-green-600 peer"
+            />
+            <div
+              class="peer-checked:line-through peer-checked:text-base-content/30 transition-all duration-300"
+            >
+              {{ todo.content }}
+            </div>
+          </div>
+
+          <div class="flex">
+            <button
+              class="btn btn-square btn-ghost text-primary"
+              (click)="deleteTodo(todo.id)"
+            >
+              <span class="material-symbols-outlined"> delete </span>
+            </button>
+            <button
+              class="btn btn-square btn-ghost text-primary"
+              (click)="setEditId(todo)"
+            >
+              <span class="material-symbols-outlined"> edit </span>
+            </button>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<ng-template #editTemplate>
+  <div class="flex p-4 gap-2">
+    <input
+      type="text"
+      [(ngModel)]="editValue"
+      placeholder="Add new task"
+      class="input w-full focus:outline-0 text-base-content placeholder:text-gray-500"
+    />
+
+    <div class="flex">
+      <button
+        (click)="saveEdit()"
+        class="btn btn-square btn-ghost text-primary disabled:text-base-100"
+        [disabled]="!editValue"
+      >
+        <span class="material-symbols-outlined"> check </span>
+      </button>
+      <button
+        (click)="activeEditId = ''"
+        class="btn btn-square btn-ghost text-primary"
+      >
+        <span class="material-symbols-outlined"> close </span>
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<app-confirm></app-confirm>
